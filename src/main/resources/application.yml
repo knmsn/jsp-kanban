@@ -1,0 +1,58 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    encoding:
+      charset: 'UTF-8'
+      enabled: true
+      force: true
+    context-path: '/'
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kanban
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+    initialization-mode: always
+    connectionTestQuery: 'SELECT 1'
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+  mvc:
+    view:
+      prefix: '/WEB-INF/jsp/'
+      suffix: '.jsp'
+
+  main:
+    allow-bean-definition-overriding: true
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: 'org.hibernate.dialect.PostgreSQLDialect'
+
+    hibernate:
+      ddl-auto: update
+
+    generate-ddl: true
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+  endpoint:
+    health:
+      show-details: always

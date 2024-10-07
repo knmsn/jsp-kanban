@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="1" author="seu_nome">
+        <createTable tableName="pessoa">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="nome" type="character varying(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="datanascimento" type="date"/>
+            <column name="cpf" type="character varying(14)"/>
+            <column name="funcionario" type="boolean"/>
+            <column name="gerente" type="boolean"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="seu_nome">
+        <createTable tableName="projeto">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="nome" type="varchar(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_inicio" type="date"/>
+            <column name="data_previsao_fim" type="date"/>
+            <column name="data_fim" type="date"/>
+            <column name="descricao" type="varchar(5000)"/>
+            <column name="status" type="varchar(45)"/>
+            <column name="orcamento" type="float"/>
+            <column name="risco" type="varchar(45)"/>
+            <column name="idgerente" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <foreignKey foreignKeyName="fk_gerente" references="pessoa(id)">
+                <column name="idgerente"/>
+            </foreignKey>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="3" author="seu_nome">
+        <createTable tableName="membros">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="idprojeto" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="idpessoa" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="papel" type="varchar(100)"/>
+            <foreignKey foreignKeyName="fk_projeto" references="projeto(id)">
+                <column name="idprojeto"/>
+            </foreignKey>
+            <foreignKey foreignKeyName="fk_pessoa" references="pessoa(id)">
+                <column name="idpessoa"/>
+            </foreignKey>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
