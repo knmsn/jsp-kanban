@@ -1,4 +1,4 @@
-package br.com.biblioteca.controller;
+package br.com.biblioteca.controllers;
 
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
