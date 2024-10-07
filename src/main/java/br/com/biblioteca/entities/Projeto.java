@@ -2,6 +2,7 @@ package br.com.biblioteca.entities;
 
 import br.com.biblioteca.enums.StatusProjeto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.util.List;
 @Entity
 @Table(name = "projeto")
 @Data
+@AllArgsConstructor
 public class Projeto {
 
   @Id

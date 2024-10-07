@@ -13,7 +13,7 @@ import java.util.Optional;
 public class ProjetoService {
 
   @Autowired
-  private ProjetoRepository projetoRepository;
+  public ProjetoRepository projetoRepository;
 
   public List<Projeto> findAll() {
     return projetoRepository.findAll();
