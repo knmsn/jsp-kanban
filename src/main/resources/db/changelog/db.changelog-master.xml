@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="1" author="seu_nome">
+    <changeSet id="1" author="gustavo.deoliveira">
         <createTable tableName="pessoa">
             <column name="id" type="bigserial">
                 <constraints primaryKey="true"/>
@@ -20,7 +20,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2" author="seu_nome">
+    <changeSet id="2" author="gustavo.deoliveira">
         <createTable tableName="projeto">
             <column name="id" type="bigserial">
                 <constraints primaryKey="true"/>
@@ -38,13 +38,16 @@
             <column name="idgerente" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <foreignKey foreignKeyName="fk_gerente" references="pessoa(id)">
-                <column name="idgerente"/>
-            </foreignKey>
         </createTable>
+        <addForeignKeyConstraint
+                baseColumnNames="idgerente"
+                baseTableName="projeto"
+                constraintName="fk_gerente"
+                referencedColumnNames="id"
+                referencedTableName="pessoa"/>
     </changeSet>
 
-    <changeSet id="3" author="seu_nome">
+    <changeSet id="3" author="gustavo.deoliveira">
         <createTable tableName="membros">
             <column name="id" type="bigserial">
                 <constraints primaryKey="true"/>
@@ -56,13 +59,19 @@
                 <constraints nullable="false"/>
             </column>
             <column name="papel" type="varchar(100)"/>
-            <foreignKey foreignKeyName="fk_projeto" references="projeto(id)">
-                <column name="idprojeto"/>
-            </foreignKey>
-            <foreignKey foreignKeyName="fk_pessoa" references="pessoa(id)">
-                <column name="idpessoa"/>
-            </foreignKey>
         </createTable>
+        <addForeignKeyConstraint
+                baseColumnNames="idprojeto"
+                baseTableName="membros"
+                constraintName="fk_projeto"
+                referencedColumnNames="id"
+                referencedTableName="projeto"/>
+        <addForeignKeyConstraint
+                baseColumnNames="idpessoa"
+                baseTableName="membros"
+                constraintName="fk_pessoa"
+                referencedColumnNames="id"
+                referencedTableName="pessoa"/>
     </changeSet>
 
 </databaseChangeLog>
