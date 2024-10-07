@@ -1,5 +1,6 @@
 package br.com.biblioteca.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import javax.persistence.*;
 import javax.persistence.GenerationType;
@@ -31,5 +32,6 @@ public class Pessoa {
   private Boolean gerente;
 
   @OneToMany(mappedBy = "gerente")
+  @JsonIgnore
   private List<Projeto> projetosGerenciados;
 }

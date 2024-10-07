@@ -17,7 +17,7 @@ public class ProjetoController {
   @Autowired
   private ProjetoService projetoService;
 
-  @GetMapping
+  @GetMapping("")
   public List<Projeto> getAllProjetos() {
     return projetoService.findAll();
   }

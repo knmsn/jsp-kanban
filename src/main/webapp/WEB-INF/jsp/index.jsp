@@ -1,5 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="pt_br">
 <head>
@@ -7,12 +6,134 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Kanban Board</title>
+    <title>Meus Projetos</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.2/dragula.min.js"></script>
     <script src="https://server.chhjny.com/jkanban/jkanban.min.js"></script>
+
+ <script>
+        $(document).ready(function() {
+            fetchData()
+
+           $.ajax({
+               url: 'http://localhost:9000/api/pessoas',
+               type: 'GET',
+               data: {  },
+               success: function(response) {
+                   var gerenteSelect = $('#gerente');
+
+                   gerenteSelect.empty().append('<option value="">Selecione um gerente</option>');
+
+                   response.forEach(function(gerente) {
+                       gerenteSelect.append(
+                           $('<option>', {
+                               value: gerente.id,
+                               text: gerente.nome
+                           })
+                       );
+                   });
+               },
+               error: function(xhr, status, error) {
+                   console.log('Erro: ' + error);
+               }
+           });
+        });
+
+
+
+function fetchData() {
+    $.ajax({
+        url: 'http://localhost:9000/api/projetos',
+        type: 'GET',
+        success: function(response) {
+            $('table tbody').empty(); // Limpa o corpo da tabela
+
+            response.forEach(function(projeto) {
+                // Cria a string para a linha da tabela usando concatenação
+                let row = '<tr>';
+                row += '<td>' + (projeto.nome || 'N/A') + '</td>';
+                row += '<td>' + (projeto.dataInicio || 'N/A') + '</td>';
+                row += '<td>' + (projeto.dataPrevisaoFim || 'N/A') + '</td>';
+                row += '<td>' + (projeto.dataFim || 'N/A') + '</td>';
+                row += '<td>' + (projeto.descricao || 'N/A') + '</td>';
+                row += '<td>' + (projeto.status || 'N/A') + '</td>';
+                row += '<td>' + (projeto.orcamento || 'N/A') + '</td>';
+                row += '<td>' + (projeto.risco || 'N/A') + '</td>';
+
+                let gerenteNome = (projeto.gerente && projeto.gerente.nome) ? projeto.gerente.nome : 'N/A';
+                row += '<td>' + gerenteNome + '</td>';
+
+                row += '<td>';
+                row += '<button class="btn btn-primary" onclick="editProject(' + projeto.id + ')">Editar</button>';
+                row += '<button class="btn btn-danger" style="margin-left: 15px" onclick="deleteProject(' + projeto.id + ')">Deletar</button>';
+                row += '</td>';
+
+                row += '</tr>';
+
+                // Adiciona a nova linha ao corpo da tabela
+                $('table tbody').append(row);
+            });
+        },
+        error: function(xhr, status, error) {
+            console.log('Erro: ' + error);
+        }
+    });
+}
+
+function deleteProject(id){
+$.ajax({
+                   url: 'http://localhost:9000/api/projetos/'+id,
+                   type: 'DELETE',
+                   contentType: 'application/json',
+                   data: {},
+                   success: function(response) {
+                       fetchData()
+                       alert("Deletado com sucesso.")
+                   },
+                   error: function(xhr, status, error) {
+                       alert('O projeto não pode ser deletado.');
+                   }
+               });
+}
+
+   function submitForm() {
+           const form = document.getElementById('projetoForm');
+           if (form.checkValidity()) {
+               const projetoData = {
+                   nome: $('#nome').val(),
+                   dataInicio: $('#dataInicio').val(),
+                   dataPrevisaoFim: $('#dataPrevisaoFim').val(),
+                   dataFim: $('#dataFim').val(),
+                   descricao: $('#descricao').val(),
+                   status: $('#status').val(),
+                   orcamento: parseFloat($('#orcamento').val()),
+                   risco: $('#risco').val(),
+                   gerente: {
+                       id: $('#gerente').val()
+                   }
+               };
+
+               $.ajax({
+                   url: 'http://localhost:9000/api/projetos',
+                   type: 'POST',
+                   contentType: 'application/json',
+                   data: JSON.stringify(projetoData),
+                   success: function(response) {
+                       fetchData()
+                       $('#projetoModal').modal('hide');
+                       form.reset();
+                   },
+                   error: function(xhr, status, error) {
+                       console.error('Erro ao criar projeto:', error);
+                   }
+               });
+           } else {
+               form.reportValidity();
+           }
+       }
+    </script>
 
     <style>
         body {
@@ -134,369 +255,107 @@
     </style>
 </head>
 <body>
-<main class="content">
-    <div class="container-fluid p-0">
-        <h1 class="h3 mb-3" style="margin-left: 70px">Kanban Board</h1>
-
-        <div class="kanban-container">
-        <div class="col-12 col-lg-4 col-xl-2">
-                                    <div class="card card-border-primary">
-                                        <div class="card-header">
-                                            <div class="card-actions float-right">
-                                                <div class="dropdown show">
-                                                    <a href="#" data-toggle="dropdown" data-display="static">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal align-middle">
-                                                            <circle cx="12" cy="12" r="1"></circle>
-                                                            <circle cx="19" cy="12" r="1"></circle>
-                                                            <circle cx="5" cy="12" r="1"></circle>
-                                                        </svg>
-                                                    </a>
-
-                                                    <div class="dropdown-menu dropdown-menu-right">
-                                                        <a class="dropdown-item" href="#">Action</a>
-                                                        <a class="dropdown-item" href="#">Another action</a>
-                                                        <a class="dropdown-item" href="#">Something else here</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <h5 class="card-title">Planejado</h5>
-                                            <h6 class="card-subtitle text-muted">Nam pretium turpis et arcu. Duis arcu tortor.</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="card mb-3 bg-light">
-                                                <div class="card-body p-3">
-                                                    <div class="float-right mr-n2">
-                                                        <label class="custom-control custom-checkbox">
-                                                            <input type="checkbox" class="custom-control-input">
-                                                            <span class="custom-control-label"></span>
-                                                        </label>
-                                                    </div>
-                                                    <p>Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum.</p>
-                                                    <div class="float-right mt-n1">
-                                                        <img src="https://bootdey.com/img/Content/avatar/avatar6.png" width="32" height="32" class="rounded-circle" alt="Avatar">
-                                                    </div>
-                                                    <a class="btn btn-outline-primary btn-sm" href="#">View</a>
-                                                </div>
-                                            </div>
-                                            <a href="#" class="btn btn-primary btn-block">Add new</a>
-                                        </div>
-                                    </div>
-                                </div>
-            <div class="col-12 col-lg-4 col-xl-2">
-                <div class="card card-border-primary">
-                    <div class="card-header">
-                        <div class="card-actions float-right">
-                            <div class="dropdown show">
-                                <a href="#" data-toggle="dropdown" data-display="static">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal align-middle">
-                                        <circle cx="12" cy="12" r="1"></circle>
-                                        <circle cx="19" cy="12" r="1"></circle>
-                                        <circle cx="5" cy="12" r="1"></circle>
-                                    </svg>
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a class="dropdown-item" href="#">Action</a>
-                                    <a class="dropdown-item" href="#">Another action</a>
-                                    <a class="dropdown-item" href="#">Something else here</a>
-                                </div>
-                            </div>
+<nav class="navbar navbar-dark bg-dark">
+  <a class="navbar-brand" href="#">
+    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" width="30" height="30" class="d-inline-block align-top" alt="">
+    Meu gerenciador de projetos
+  </a>
+</nav>
+<main style="margin: 50px">
+<h1 class="h3 mb-3">Meus Projetos</h1>
+<a class="btn btn-primary btn-block" style="max-width:150px" data-toggle="modal" data-target="#projetoModal">Criar Projeto</a>
+    <div class="modal fade" id="projetoModal" tabindex="-1" role="dialog" aria-labelledby="projetoModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="projetoModalLabel">Projeto</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="projetoForm">
+                        <div class="form-group">
+                            <label for="nome">Nome</label>
+                            <input type="text" class="form-control" id="nome" name="nome" required>
                         </div>
-                        <h5 class="card-title">Em análise</h5>
-                        <h6 class="card-subtitle text-muted">Nam pretium turpis et arcu. Duis arcu tortor.</h6>
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="card mb-3 bg-light">
-                            <div class="card-body p-3">
-                                <div class="float-right mr-n2">
-                                    <label class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input">
-                                        <span class="custom-control-label"></span>
-                                    </label>
-                                </div>
-                                <p>Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum.</p>
-                                <div class="float-right mt-n1">
-                                    <img src="https://bootdey.com/img/Content/avatar/avatar4.png" width="32" height="32" class="rounded-circle" alt="Avatar">
-                                </div>
-                                <a class="btn btn-outline-primary btn-sm" href="#">View</a>
-                            </div>
+                        <div class="form-group">
+                            <label for="dataInicio">Data de Início</label>
+                            <input type="date" class="form-control" id="dataInicio" name="dataInicio" required>
                         </div>
-                        <a href="#" class="btn btn-primary btn-block">Add new</a>
-                    </div>
+                        <div class="form-group">
+                            <label for="dataPrevisaoFim">Data de Previsão de Fim</label>
+                            <input type="date" class="form-control" id="dataPrevisaoFim" name="dataPrevisaoFim" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dataFim">Data de Fim</label>
+                            <input type="date" class="form-control" id="dataFim" name="dataFim">
+                        </div>
+                        <div class="form-group">
+                            <label for="descricao">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select class="form-control" id="status" name="status" required>
+                                <option value="">Selecione um status</option>
+                                <option value="EM_ANALISE">Em Análise</option>
+                                <option value="ANALISE_REALIZADA">Análise Realizada</option>
+                                <option value="ANALISE_APROVADA">Análise Aprovada</option>
+                                <option value="INICIADO">Iniciado</option>
+                                <option value="PLANEJADO">Planejado</option>
+                                <option value="EM_ANDAMENTO">Em Andamento</option>
+                                <option value="ENCERRADO">Encerrado</option>
+                                <option value="CANCELADO">Cancelado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="orcamento">Orçamento</label>
+                            <input type="number" class="form-control" id="orcamento" name="orcamento" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="risco">Risco</label>
+                            <select class="form-control" id="risco" name="risco" required>
+                            <option value="">Selecione um risco</option>
+                            <option value="Baixo Risco">Baixo Risco</option>
+                            <option value="Medio Risco">Medio Risco</option>
+                            <option value="Alto Risco">Alto Risco</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="gerente">Gerente</label>
+                            <select class="form-control" id="gerente" name="gerente" required>
+                                <option value="">Selecione um gerente</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" onclick="submitForm()">Salvar</button>
                 </div>
             </div>
-            <div class="col-12 col-lg-4 col-xl-2">
-                <div class="card card-border-primary">
-                    <div class="card-header">
-                        <div class="card-actions float-right">
-                            <div class="dropdown show">
-                                <a href="#" data-toggle="dropdown" data-display="static">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal align-middle">
-                                        <circle cx="12" cy="12" r="1"></circle>
-                                        <circle cx="19" cy="12" r="1"></circle>
-                                        <circle cx="5" cy="12" r="1"></circle>
-                                    </svg>
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a class="dropdown-item" href="#">Action</a>
-                                    <a class="dropdown-item" href="#">Another action</a>
-                                    <a class="dropdown-item" href="#">Something else here</a>
-                                </div>
-                            </div>
-                        </div>
-                        <h5 class="card-title">Análise Realizada</h5>
-                        <h6 class="card-subtitle text-muted">Nam pretium turpis et arcu. Duis arcu tortor.</h6>
-                    </div>
-                    <div class="card-body">
-
-                        <div class="card mb-3 bg-light">
-                            <div class="card-body p-3">
-                                <div class="float-right mr-n2">
-                                    <label class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input">
-                                        <span class="custom-control-label"></span>
-                                    </label>
-                                </div>
-                                <p>Curabitur ligula sapien, tincidunt non, euismod vitae, posuere imperdiet, leo. Maecenas malesuada.</p>
-                                <div class="float-right mt-n1">
-                                    <img src="https://bootdey.com/img/Content/avatar/avatar6.png" width="32" height="32" class="rounded-circle" alt="Avatar">
-                                </div>
-                                <a class="btn btn-outline-primary btn-sm" href="#">View</a>
-                            </div>
-                        </div>
-
-                        <a href="#" class="btn btn-primary btn-block">Add new</a>
-
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-lg-4 col-xl-2">
-                <div class="card card-border-success">
-                    <div class="card-header">
-                        <div class="card-actions float-right">
-                            <div class="dropdown show">
-                                <a href="#" data-toggle="dropdown" data-display="static">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal align-middle">
-                                        <circle cx="12" cy="12" r="1"></circle>
-                                        <circle cx="19" cy="12" r="1"></circle>
-                                        <circle cx="5" cy="12" r="1"></circle>
-                                    </svg>
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a class="dropdown-item" href="#">Action</a>
-                                    <a class="dropdown-item" href="#">Another action</a>
-                                    <a class="dropdown-item" href="#">Something else here</a>
-                                </div>
-                            </div>
-                        </div>
-                        <h5 class="card-title">Análise Aprovada</h5>
-                        <h6 class="card-subtitle text-muted">Nam pretium turpis et arcu. Duis arcu tortor.</h6>
-                    </div>
-                    <div class="card-body">
-
-                        <div class="card mb-3 bg-light">
-                            <div class="card-body p-3">
-                                <div class="float-right mr-n2">
-                                    <label class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input">
-                                        <span class="custom-control-label"></span>
-                                    </label>
-                                </div>
-                                <p>In hac habitasse platea dictumst. Curabitur at lacus ac velit ornare lobortis. Curabitur a felis tristique.</p>
-                                <div class="float-right mt-n1">
-                                    <img src="https://bootdey.com/img/Content/avatar/avatar2.png" width="32" height="32" class="rounded-circle" alt="Avatar">
-                                </div>
-                                <a class="btn btn-outline-primary btn-sm" href="#">View</a>
-                            </div>
-                        </div>
-
-                        <a href="#" class="btn btn-primary btn-block">Add new</a>
-
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-lg-4 col-xl-2">
-                <div class="card card-border-primary">
-                    <div class="card-header">
-                        <div class="card-actions float-right">
-                            <div class="dropdown show">
-                                <a href="#" data-toggle="dropdown" data-display="static">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal align-middle">
-                                        <circle cx="12" cy="12" r="1"></circle>
-                                        <circle cx="19" cy="12" r="1"></circle>
-                                        <circle cx="5" cy="12" r="1"></circle>
-                                    </svg>
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a class="dropdown-item" href="#">Action</a>
-                                    <a class="dropdown-item" href="#">Another action</a>
-                                    <a class="dropdown-item" href="#">Something else here</a>
-                                </div>
-                            </div>
-                        </div>
-                        <h5 class="card-title">Iniciado</h5>
-                        <h6 class="card-subtitle text-muted">Nam pretium turpis et arcu. Duis arcu tortor.</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="card mb-3 bg-light">
-                            <div class="card-body p-3">
-                                <div class="float-right mr-n2">
-                                    <label class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input">
-                                        <span class="custom-control-label"></span>
-                                    </label>
-                                </div>
-                                <p>Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum.</p>
-                                <div class="float-right mt-n1">
-                                    <img src="https://bootdey.com/img/Content/avatar/avatar6.png" width="32" height="32" class="rounded-circle" alt="Avatar">
-                                </div>
-                                <a class="btn btn-outline-primary btn-sm" href="#">View</a>
-                            </div>
-                        </div>
-                        <a href="#" class="btn btn-primary btn-block">Add new</a>
-                    </div>
-                </div>
-            </div>
-
-                        <div class="col-12 col-lg-4 col-xl-2">
-                                        <div class="card card-border-primary">
-                                            <div class="card-header">
-                                                <div class="card-actions float-right">
-                                                    <div class="dropdown show">
-                                                        <a href="#" data-toggle="dropdown" data-display="static">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal align-middle">
-                                                                <circle cx="12" cy="12" r="1"></circle>
-                                                                <circle cx="19" cy="12" r="1"></circle>
-                                                                <circle cx="5" cy="12" r="1"></circle>
-                                                            </svg>
-                                                        </a>
-
-                                                        <div class="dropdown-menu dropdown-menu-right">
-                                                            <a class="dropdown-item" href="#">Action</a>
-                                                            <a class="dropdown-item" href="#">Another action</a>
-                                                            <a class="dropdown-item" href="#">Something else here</a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <h5 class="card-title">Em Andamento</h5>
-                                                <h6 class="card-subtitle text-muted">Nam pretium turpis et arcu. Duis arcu tortor.</h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="card mb-3 bg-light">
-                                                    <div class="card-body p-3">
-                                                        <div class="float-right mr-n2">
-                                                            <label class="custom-control custom-checkbox">
-                                                                <input type="checkbox" class="custom-control-input">
-                                                                <span class="custom-control-label"></span>
-                                                            </label>
-                                                        </div>
-                                                        <p>Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum.</p>
-                                                        <div class="float-right mt-n1">
-                                                            <img src="https://bootdey.com/img/Content/avatar/avatar6.png" width="32" height="32" class="rounded-circle" alt="Avatar">
-                                                        </div>
-                                                        <a class="btn btn-outline-primary btn-sm" href="#">View</a>
-                                                    </div>
-                                                </div>
-                                                <a href="#" class="btn btn-primary btn-block">Add new</a>
-                                            </div>
-                                        </div>
-                                    </div>
-
-<div class="col-12 col-lg-4 col-xl-2">
-                <div class="card card-border-success">
-                    <div class="card-header">
-                        <div class="card-actions float-right">
-                            <div class="dropdown show">
-                                <a href="#" data-toggle="dropdown" data-display="static">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal align-middle">
-                                        <circle cx="12" cy="12" r="1"></circle>
-                                        <circle cx="19" cy="12" r="1"></circle>
-                                        <circle cx="5" cy="12" r="1"></circle>
-                                    </svg>
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a class="dropdown-item" href="#">Action</a>
-                                    <a class="dropdown-item" href="#">Another action</a>
-                                    <a class="dropdown-item" href="#">Something else here</a>
-                                </div>
-                            </div>
-                        </div>
-                        <h5 class="card-title">Encerrado</h5>
-                        <h6 class="card-subtitle text-muted">Nam pretium turpis et arcu. Duis arcu tortor.</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="card mb-3 bg-light">
-                            <div class="card-body p-3">
-                                <div class="float-right mr-n2">
-                                    <label class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input">
-                                        <span class="custom-control-label"></span>
-                                    </label>
-                                </div>
-                                <p>Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum.</p>
-                                <div class="float-right mt-n1">
-                                    <img src="https://bootdey.com/img/Content/avatar/avatar6.png" width="32" height="32" class="rounded-circle" alt="Avatar">
-                                </div>
-                                <a class="btn btn-outline-primary btn-sm" href="#">View</a>
-                            </div>
-                        </div>
-                        <a href="#" class="btn btn-primary btn-block">Add new</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-lg-4 col-xl-2">
-                            <div class="card card-border-danger">
-                                <div class="card-header">
-                                    <div class="card-actions float-right">
-                                        <div class="dropdown show">
-                                            <a href="#" data-toggle="dropdown" data-display="static">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal align-middle">
-                                                    <circle cx="12" cy="12" r="1"></circle>
-                                                    <circle cx="19" cy="12" r="1"></circle>
-                                                    <circle cx="5" cy="12" r="1"></circle>
-                                                </svg>
-                                            </a>
-
-                                            <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" href="#">Action</a>
-                                                <a class="dropdown-item" href="#">Another action</a>
-                                                <a class="dropdown-item" href="#">Something else here</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <h5 class="card-title">Cancelado</h5>
-                                    <h6 class="card-subtitle text-muted">Nam pretium turpis et arcu. Duis arcu tortor.</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="card mb-3 bg-light">
-                                        <div class="card-body p-3">
-                                            <div class="float-right mr-n2">
-                                                <label class="custom-control custom-checkbox">
-                                                    <input type="checkbox" class="custom-control-input">
-                                                    <span class="custom-control-label"></span>
-                                                </label>
-                                            </div>
-                                            <p>Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum.</p>
-                                            <div class="float-right mt-n1">
-                                                <img src="https://bootdey.com/img/Content/avatar/avatar6.png" width="32" height="32" class="rounded-circle" alt="Avatar">
-                                            </div>
-                                            <a class="btn btn-outline-primary btn-sm" href="#">View</a>
-                                        </div>
-                                    </div>
-                                    <a href="#" class="btn btn-primary btn-block">Add new</a>
-                                </div>
-                            </div>
-                        </div>
-
-
         </div>
-
     </div>
+</div>
+<table class="table"  style="margin-right: 30px;margin-top: 30px;background-color:white">
+  <thead>
+    <tr>
+      <th scope="col">Nome</th>
+      <th scope="col">Data Inicio</th>
+      <th scope="col">Data Previsão Fim</th>
+      <th scope="col">Data Fim</th>
+      <th scope="col">Descrição</th>
+      <th scope="col">Status</th>
+      <th scope="col">Orçamento</th>
+      <th scope="col">Risco</th>
+      <th scope="col">Gerente</th>
+      <th scope="col">Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
 </main>
 </body>
 </html>

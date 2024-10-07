@@ -74,4 +74,30 @@
                 referencedTableName="pessoa"/>
     </changeSet>
 
+    <changeSet id="4" author="gustavo.deoliveira">
+        <insert tableName="pessoa">
+            <column name="nome" value="Gerente 1"/>
+            <column name="datanascimento" value="1980-01-01"/> <!-- Data de nascimento do Gerente 1 -->
+            <column name="cpf" value="123.456.789-01"/>
+            <column name="funcionario" value="true"/>
+            <column name="gerente" value="true"/>
+        </insert>
+
+        <insert tableName="pessoa">
+            <column name="nome" value="Gerente 2"/>
+            <column name="datanascimento" value="1985-02-02"/> <!-- Data de nascimento do Gerente 2 -->
+            <column name="cpf" value="234.567.890-12"/>
+            <column name="funcionario" value="true"/>
+            <column name="gerente" value="true"/>
+        </insert>
+
+        <insert tableName="pessoa">
+            <column name="nome" value="Gerente 3"/>
+            <column name="datanascimento" value="1990-03-03"/> <!-- Data de nascimento do Gerente 3 -->
+            <column name="cpf" value="345.678.901-23"/>
+            <column name="funcionario" value="true"/>
+            <column name="gerente" value="true"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>
