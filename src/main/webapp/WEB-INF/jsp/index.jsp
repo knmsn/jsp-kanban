@@ -42,21 +42,32 @@
         });
 
 
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+
+    const dateParts = dateString.split('-');
+    if (dateParts.length !== 3) return 'N/A';
+
+    const day = dateParts[2].padStart(2, '0');
+    const month = dateParts[1].padStart(2, '0');
+    const year = dateParts[0]; // Ano
+
+    return day + '/' + month + '/' + year;
+}
 
 function fetchData() {
     $.ajax({
         url: 'http://localhost:9000/api/projetos',
         type: 'GET',
         success: function(response) {
-            $('table tbody').empty(); // Limpa o corpo da tabela
+            $('table tbody').empty();
 
             response.forEach(function(projeto) {
-                // Cria a string para a linha da tabela usando concatenação
                 let row = '<tr>';
                 row += '<td>' + (projeto.nome || 'N/A') + '</td>';
-                row += '<td>' + (projeto.dataInicio || 'N/A') + '</td>';
-                row += '<td>' + (projeto.dataPrevisaoFim || 'N/A') + '</td>';
-                row += '<td>' + (projeto.dataFim || 'N/A') + '</td>';
+                row += '<td>' + formatDate(projeto.dataInicio) + '</td>';
+                row += '<td>' + formatDate(projeto.dataPrevisaoFim) + '</td>';
+                row += '<td>' + formatDate(projeto.dataFim) + '</td>';
                 row += '<td>' + (projeto.descricao || 'N/A') + '</td>';
                 row += '<td>' + (projeto.status || 'N/A') + '</td>';
                 row += '<td>' + (projeto.orcamento || 'N/A') + '</td>';
@@ -66,13 +77,11 @@ function fetchData() {
                 row += '<td>' + gerenteNome + '</td>';
 
                 row += '<td>';
-                row += '<button class="btn btn-primary" onclick="editProject(' + projeto.id + ')">Editar</button>';
                 row += '<button class="btn btn-danger" style="margin-left: 15px" onclick="deleteProject(' + projeto.id + ')">Deletar</button>';
                 row += '</td>';
 
                 row += '</tr>';
 
-                // Adiciona a nova linha ao corpo da tabela
                 $('table tbody').append(row);
             });
         },
@@ -90,7 +99,6 @@ $.ajax({
                    data: {},
                    success: function(response) {
                        fetchData()
-                       alert("Deletado com sucesso.")
                    },
                    error: function(xhr, status, error) {
                        alert('O projeto não pode ser deletado.');
@@ -137,7 +145,6 @@ $.ajax({
 
     <style>
         body {
-            margin-top: 20px;
             background: #fafafa;
         }
 
@@ -263,7 +270,7 @@ $.ajax({
 </nav>
 <main style="margin: 50px">
 <h1 class="h3 mb-3">Meus Projetos</h1>
-<a class="btn btn-primary btn-block" style="max-width:150px" data-toggle="modal" data-target="#projetoModal">Criar Projeto</a>
+<a class="btn btn-primary btn-block" style="max-width:150px;font-weight:bold" data-toggle="modal" data-target="#projetoModal">Criar Projeto</a>
     <div class="modal fade" id="projetoModal" tabindex="-1" role="dialog" aria-labelledby="projetoModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">

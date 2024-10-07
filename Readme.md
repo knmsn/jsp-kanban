@@ -60,3 +60,22 @@ REFERENCES pessoa (id) MATCH SIMPLE
 ON UPDATE NO ACTION ON DELETE CASCADE
 );
 ```
+
+Cadastro de membro:
+
+POST
+
+```http://localhost:9000/api/membros```
+
+```
+{
+    "projeto":{
+        "id":5
+    },
+    "pessoa":{
+        "id":1
+    },
+    "papel":"funcionario"
+}
+```
+

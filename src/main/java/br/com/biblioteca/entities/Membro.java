@@ -3,8 +3,6 @@ package br.com.biblioteca.entities;
 import lombok.Data;
 import javax.persistence.*;
 import javax.persistence.GenerationType;
-import java.time.LocalDate;
-import java.util.List;
 
 @Entity
 @Table(name = "membros")

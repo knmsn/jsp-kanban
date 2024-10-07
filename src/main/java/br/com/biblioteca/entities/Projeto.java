@@ -1,6 +1,7 @@
 package br.com.biblioteca.entities;
 
 import br.com.biblioteca.enums.StatusProjeto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -45,5 +46,6 @@ public class Projeto {
   private Pessoa gerente;
 
   @OneToMany(mappedBy = "projeto")
+  @JsonIgnore
   private List<Membro> membros;
 }
