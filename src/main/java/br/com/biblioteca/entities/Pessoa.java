@@ -1,7 +1,10 @@
 package br.com.biblioteca.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import javax.persistence.GenerationType;
 import java.time.LocalDate;
@@ -10,6 +13,8 @@ import java.util.List;
 @Entity
 @Table(name = "pessoa")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Pessoa {
 
   @Id
